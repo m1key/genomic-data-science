@@ -34,9 +34,10 @@ def get_orfs(dna):
                                 end += 1
         return matches
 
-
-for record in records:
-	print
-	print 'The length of [%s] is [%d].' % (record.id, len(record.seq))
-	for orf in get_orfs(str(record.seq)):
-		print "Length: %d, Start: %d, Sequence: %s" % (len(orf), str(record.seq).find(orf), orf)
+with open('all_dna.txt', 'w') as f:
+	for record in records:
+		print
+		print 'The length of [%s] is [%d].' % (record.id, len(record.seq))
+		for orf in get_orfs(str(record.seq)):
+			print "Length: %d, Start: %d, Sequence: %s" % (len(orf), str(record.seq).find(orf), orf)
+		f.write(str(record.seq) + "\n")
