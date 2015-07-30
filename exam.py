@@ -5,7 +5,7 @@ import re
 if len(sys.argv) == 2:
 	file_name = sys.argv[1]
 else:
-	file_name = 'dna.example.fasta'
+	file_name = 'dna1.fasta'
 
 print 'File name: [%s]' % file_name
 
