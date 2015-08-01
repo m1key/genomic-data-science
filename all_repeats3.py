@@ -2,13 +2,13 @@ import itertools
 import re
 
 class DnaFind:
-	def __init__(self, sequence, start_positions):
-		self.sequence = sequence
+	def __init__(self, repeat, start_positions):
+		self.repeat = repeat
 		self.start_positions = start_positions
 	def __eq__(self, other):
-		return self.sequence == other.sequence and self.start_positions == other.start_positions
+		return self.repeat == other.repeat and self.start_positions == other.start_positions
 	def __repr__(self):
-		return "DnaFind('%s', %s)" % (self.sequence, self.start_positions)
+		return "DnaFind('%s', %s)" % (self.repeat, self.start_positions)
 	__str__ = __repr__
 
 start = 4
@@ -41,7 +41,7 @@ def find_repeats(dna, target, repeats):
 	for repeat in repeats:
 		candidates = []
 		for p in itertools.product("ACGT", repeat=1):
-			candidate = repeat.sequence + ''.join(p)
+			candidate = repeat.repeat + ''.join(p)
 			candidate_length = len(candidate)
 			matched = []
 			for start_position in repeat.start_positions:
@@ -49,7 +49,7 @@ def find_repeats(dna, target, repeats):
 					matched.append(start_position)
 			if len(matched) > 1:
 				candidates.append(DnaFind(candidate, matched))
-		if len(repeat.sequence) + 1 < target:
+		if len(repeat.repeat) + 1 < target:
 			all_candidates.extend(find_repeats(dna, target, candidates))
 		else:
 			all_candidates.extend(candidates)
@@ -57,25 +57,25 @@ def find_repeats(dna, target, repeats):
 
 def finds(x): return len(x.start_positions)
 
-def find_by_sequence(repeats, sequence, unique = False):
-	all_finds = [find for find in repeats if find.sequence == sequence]
+def find_by_repeat(repeats, repeat, unique = False):
+	all_finds = [find for find in repeats if find.repeat == repeat]
 	if unique:
-		contains_one(repeats, sequence)
+		contains_one(repeats, repeat)
 		return all_finds[0]
 	else:
 		return all_finds
-def contains(repeats, sequence, times):
-	assert len(find_by_sequence(repeats, sequence)) == times
-def contains_one(repeats, sequence):
-	contains(repeats, sequence, 1)
-def contains_zero(repeats, sequence):
-	contains(repeats, sequence, 0)
-def has_start_positions(repeats, sequence, start_position_count):
-	assert len(find_by_sequence(repeats, sequence, unique = True).start_positions) == start_position_count
+def contains(repeats, repeat, times):
+	assert len(find_by_repeat(repeats, repeat)) == times
+def contains_one(repeats, repeat):
+	contains(repeats, repeat, 1)
+def contains_zero(repeats, repeat):
+	contains(repeats, repeat, 0)
+def has_start_positions(repeats, repeat, start_position_count):
+	assert len(find_by_repeat(repeats, repeat, unique = True).start_positions) == start_position_count
 def has_repeats_with_x_start_indeces(repeats, start_indeces_count, count):
 	assert len([find for find in repeats if len(find.start_positions) == start_indeces_count]) == count
-def has_start_indeces_at(repeats, sequence, start_indeces):
-	assert find_by_sequence(repeats, sequence, unique = True).start_positions == start_indeces
+def has_start_indeces_at(repeats, repeat, start_indeces):
+	assert find_by_repeat(repeats, repeat, unique = True).start_positions == start_indeces
 
 with open("all_dna.txt") as f:
 	dna = f.read()
