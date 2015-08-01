@@ -2,13 +2,13 @@ import itertools
 import re
 
 class DnaFind:
-	def __init__(self, repeat, start_positions):
+	def __init__(self, repeat, start_indeces):
 		self.repeat = repeat
-		self.start_positions = start_positions
+		self.start_indeces = start_indeces
 	def __eq__(self, other):
-		return self.repeat == other.repeat and self.start_positions == other.start_positions
+		return self.repeat == other.repeat and self.start_indeces == other.start_indeces
 	def __repr__(self):
-		return "DnaFind('%s', %s)" % (self.repeat, self.start_positions)
+		return "DnaFind('%s', %s)" % (self.repeat, self.start_indeces)
 	__str__ = __repr__
 
 start = 4
@@ -44,7 +44,7 @@ def find_repeats(dna, target, repeats):
 			candidate = repeat.repeat + ''.join(p)
 			candidate_length = len(candidate)
 			matched = []
-			for start_position in repeat.start_positions:
+			for start_position in repeat.start_indeces:
 				if dna[start_position:start_position + candidate_length] == candidate:
 					matched.append(start_position)
 			if len(matched) > 1:
@@ -55,7 +55,7 @@ def find_repeats(dna, target, repeats):
 			all_candidates.extend(candidates)
 	return all_candidates
 
-def finds(x): return len(x.start_positions)
+def finds(x): return len(x.start_indeces)
 
 def find_by_repeat(repeats, repeat, unique = False):
 	all_finds = [find for find in repeats if find.repeat == repeat]
@@ -70,12 +70,12 @@ def contains_one(repeats, repeat):
 	contains(repeats, repeat, 1)
 def contains_zero(repeats, repeat):
 	contains(repeats, repeat, 0)
-def has_start_positions(repeats, repeat, start_position_count):
-	assert len(find_by_repeat(repeats, repeat, unique = True).start_positions) == start_position_count
+def has_start_indeces(repeats, repeat, start_position_count):
+	assert len(find_by_repeat(repeats, repeat, unique = True).start_indeces) == start_position_count
 def has_repeats_with_x_start_indeces(repeats, start_indeces_count, count):
-	assert len([find for find in repeats if len(find.start_positions) == start_indeces_count]) == count
+	assert len([find for find in repeats if len(find.start_indeces) == start_indeces_count]) == count
 def has_start_indeces_at(repeats, repeat, start_indeces):
-	assert find_by_repeat(repeats, repeat, unique = True).start_positions == start_indeces
+	assert find_by_repeat(repeats, repeat, unique = True).start_indeces == start_indeces
 
 with open("all_dna.txt") as f:
 	dna = f.read()
@@ -85,9 +85,9 @@ with open("all_dna.txt") as f:
 	contains_zero(repeats, "AAAACGGCTCGG") # Occurs once in the dna, so not a repeat.
 	contains_zero(repeats, "AAAACGGCTTAC") # Does not occur in the dna.
 	contains_one(repeats, "GCTGCTCGACGC") # Occurs three times in the dna.
-	has_start_positions(repeats, "AAAACGGCACCT", 2)
-	has_start_positions(repeats, "GCTGCTCGACGC", 3)
-	has_start_positions(repeats, "GTATCCCCGAAG", 2)
+	has_start_indeces(repeats, "AAAACGGCACCT", 2)
+	has_start_indeces(repeats, "GCTGCTCGACGC", 3)
+	has_start_indeces(repeats, "GTATCCCCGAAG", 2)
 	has_start_indeces_at(repeats, "TCGCGACACGTG", [10822, 39880])
 	has_start_indeces_at(repeats, "GCGATCGGCGCG", [8850, 12155, 44391])
 	assert len(repeats) == 921
