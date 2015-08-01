@@ -17,8 +17,8 @@ assert DnaRepeat("abc", [10]) != DnaRepeat("abc", [11])
 assert DnaRepeat("abc", [10]) != DnaRepeat("abd", [10])
 assert DnaRepeat("abc", [10, 15]) == DnaRepeat("abc", [10, 15])
 assert DnaRepeat("abc", [10, 15]) != DnaRepeat("abc", [10, 16])
-a_find = DnaRepeat("acgtgact", [10, 14, 19])
-assert eval(str(a_find)) == a_find
+a_repeat = DnaRepeat("acgtgact", [10, 14, 19])
+assert eval(str(a_repeat)) == a_repeat
 assert DnaRepeat("cagt", [20, 30]) == DnaRepeat("cagt", [30, 20])
 
 class DnaSequenceRepeats:
@@ -28,20 +28,20 @@ class DnaSequenceRepeats:
 		self.dna_sequence = dna_sequence
 	
 	def find_repeats(self, repeat_size):
-		initial_repeats = self._find_initial_repeats()
-		return self._find_subsequent_repeats(repeat_size, initial_repeats)
+		nucleobase_repeats = self._find_nucleobase_repeats()
+		return self._find_complex_repeats(repeat_size, nucleobase_repeats)
 
-	def _find_initial_repeats(self):
-		initial_repeats = []
+	def _find_nucleobase_repeats(self):
+		nucleobase_repeats = []
         	for nucleobase in self.NUCLEOBASES:
 			# Find occurrences of nucleobases:
                 	start_indeces = [match.start() for match in re.finditer(nucleobase, self.dna_sequence)]
 			# If this nucleobase has more than one occurrence, it is itself a repeat of length 1:
 			if len(start_indeces) > 1:
-				initial_repeats.append(DnaRepeat(nucleobase, start_indeces))
-		return initial_repeats
+				nucleobase_repeats.append(DnaRepeat(nucleobase, start_indeces))
+		return nucleobase_repeats
 	
-	def _find_subsequent_repeats(self, target, repeats):
+	def _find_complex_repeats(self, target, repeats):
 		all_candidates = []
 		if not repeats or len(repeats[0].repeat) == target:
 			return repeats
@@ -56,7 +56,7 @@ class DnaSequenceRepeats:
 						matched.append(start_position)
 				if len(matched) > 1:
 					candidates.append(DnaRepeat(candidate, matched))
-			all_candidates.extend(self._find_subsequent_repeats(target, candidates))
+			all_candidates.extend(self._find_complex_repeats(target, candidates))
 		return all_candidates
 
 def finds(x): return len(x.start_indeces)
