@@ -10,6 +10,8 @@ class DnaFind:
 	def __repr__(self):
 		return "DnaFind('%s', %s)" % (self.repeat, self.start_indeces)
 	__str__ = __repr__
+	def __hash__(self):
+		return hash(self.repeat)
 
 assert DnaFind("abc", [10]) == DnaFind("abc", [10])
 assert DnaFind("abc", [10]) != DnaFind("abc", [11])
@@ -23,16 +25,21 @@ assert DnaFind("cagt", [20, 30]) == DnaFind("cagt", [30, 20])
 class DnaSequenceRepeats:
 	def __init__(self, dna_sequence):
 		self.dna_sequence = dna_sequence
+	
 	def find_repeats(self, repeat_size):
 		initial_repeats = self._find_initial_repeats()
+		if repeat_size == 1:
+			return initial_repeats
 		return self._find_subsequent_repeats(repeat_size, initial_repeats)
 
 	def _find_initial_repeats(self):
-		start = 4
+		initial_repeat_length = 1
 		initial_repeats = []
-        	for sample_repeat_tuple in itertools.product("ACGT", repeat=start):
+        	for sample_repeat_tuple in itertools.product("ACGT", repeat = initial_repeat_length):
                 	sample_repeat = ''.join(sample_repeat_tuple)
-                	finds = [match.start() for match in re.finditer(sample_repeat, dna_sequence)]
+			# Find overlapping matches:
+                	finds = [match.start() for match in re.finditer('(?=%s)' % sample_repeat, self.dna_sequence)]
+			# If this sample repeat has more than one occurrence, it could possibly be an even longer match:
 			if len(finds) > 1:
 				initial_repeats.append(DnaFind(sample_repeat, finds))
 		return initial_repeats
@@ -79,23 +86,36 @@ def has_start_indeces_at(repeats, repeat, start_indeces):
 	assert find_by_repeat(repeats, repeat, unique = True).start_indeces == start_indeces
 
 with open("all_dna.txt") as f:
-	dna_sequence = f.read()
-	repeats = DnaSequenceRepeats(dna_sequence).find_repeats(12)
+	dna_sequence_repeats = DnaSequenceRepeats(f.read())
+	
+	repeats_12 = dna_sequence_repeats.find_repeats(12)
+	contains_one(repeats_12, "AAAACGGCACCT") # Occurs twice in the dna.
+	contains_zero(repeats_12, "AAAACGGCTCGG") # Occurs once in the dna, so not a repeat.
+	contains_zero(repeats_12, "AAAACGGCTTAC") # Does not occur in the dna.
+	contains_one(repeats_12, "GCTGCTCGACGC") # Occurs three times in the dna.
+	has_start_indeces(repeats_12, "AAAACGGCACCT", 2)
+	has_start_indeces(repeats_12, "GCTGCTCGACGC", 3)
+	has_start_indeces(repeats_12, "GTATCCCCGAAG", 2)
+	has_start_indeces(repeats_12, "CGCGGCGGCCGG", 3)
+	has_start_indeces(repeats_12, "CGCGCGGCGGCC", 4)
+	has_start_indeces_at(repeats_12, "TCGCGACACGTG", [10822, 39880])
+	has_start_indeces_at(repeats_12, "GCGATCGGCGCG", [8850, 12155, 44391])
+	has_start_indeces_at(repeats_12, "TCGTCGGCGCCG", [433, 44449, 47459, 48999])
+	assert len(repeats_12) == len(set(repeats_12))
+	assert len(repeats_12) == 974
+	has_repeats_with_x_start_indeces(repeats_12, 3, 36)
+	has_repeats_with_x_start_indeces(repeats_12, 2, 935)
+	has_repeats_with_x_start_indeces(repeats_12, 4, 3)
+	max_occurrences = max(map(finds, repeats_12))
+	assert max_occurrences == 4
+	
+	repeats_1 = dna_sequence_repeats.find_repeats(1)
+	assert len(repeats_1) == len(set(repeats_1))
+	assert len(repeats_1) == 4
+	contains_one(repeats_1, "A")	
+	contains_one(repeats_1, "C")
+	contains_one(repeats_1, "G")
+	contains_one(repeats_1, "T")
 
-	contains_one(repeats, "AAAACGGCACCT") # Occurs twice in the dna.
-	contains_zero(repeats, "AAAACGGCTCGG") # Occurs once in the dna, so not a repeat.
-	contains_zero(repeats, "AAAACGGCTTAC") # Does not occur in the dna.
-	contains_one(repeats, "GCTGCTCGACGC") # Occurs three times in the dna.
-	has_start_indeces(repeats, "AAAACGGCACCT", 2)
-	has_start_indeces(repeats, "GCTGCTCGACGC", 3)
-	has_start_indeces(repeats, "GTATCCCCGAAG", 2)
-	has_start_indeces_at(repeats, "TCGCGACACGTG", [10822, 39880])
-	has_start_indeces_at(repeats, "GCGATCGGCGCG", [8850, 12155, 44391])
-	assert len(repeats) == 921
-	has_repeats_with_x_start_indeces(repeats, 2, 886)
-	has_repeats_with_x_start_indeces(repeats, 3, 35)
-	has_repeats_with_x_start_indeces(repeats, 4, 0)
-	max_occurrences = max(map(finds, repeats))
-	assert max_occurrences == 3
 	print "All assertions passed."
 
