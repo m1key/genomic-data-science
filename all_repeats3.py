@@ -11,15 +11,13 @@ class DnaFind:
 		return "DnaFind('%s', %s)" % (self.repeat, self.start_indeces)
 	__str__ = __repr__
 
-target = 12
-
 assert DnaFind("abc", [10]) == DnaFind("abc", [10])
 assert DnaFind("abc", [10]) != DnaFind("abc", [11])
 assert DnaFind("abc", [10]) != DnaFind("abd", [10])
 assert DnaFind("abc", [10, 15]) == DnaFind("abc", [10, 15])
 assert DnaFind("abc", [10, 15]) != DnaFind("abc", [10, 16])
-find = DnaFind("acgtgact", [10, 14, 19])
-assert eval(str(find)) == find
+a_find = DnaFind("acgtgact", [10, 14, 19])
+assert eval(str(a_find)) == a_find
 
 def initial_repeats(dna):
 	start = 4
@@ -35,6 +33,7 @@ dna = "TACGTAGCAGACGTAGCA"
 
 initial = initial_repeats(dna)
 
+target = 12
 def find_repeats(dna, target, repeats):
 	all_candidates = []
 	for repeat in repeats:
