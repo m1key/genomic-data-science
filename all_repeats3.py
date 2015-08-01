@@ -6,7 +6,7 @@ class DnaFind:
 		self.repeat = repeat
 		self.start_indeces = start_indeces
 	def __eq__(self, other):
-		return self.repeat == other.repeat and self.start_indeces == other.start_indeces
+		return self.repeat == other.repeat and self.start_indeces.sort() == other.start_indeces.sort()
 	def __repr__(self):
 		return "DnaFind('%s', %s)" % (self.repeat, self.start_indeces)
 	__str__ = __repr__
@@ -18,40 +18,43 @@ assert DnaFind("abc", [10, 15]) == DnaFind("abc", [10, 15])
 assert DnaFind("abc", [10, 15]) != DnaFind("abc", [10, 16])
 a_find = DnaFind("acgtgact", [10, 14, 19])
 assert eval(str(a_find)) == a_find
+assert DnaFind("cagt", [20, 30]) == DnaFind("cagt", [30, 20])
 
-def initial_repeats(dna):
-	start = 4
-	repeats = []
-        for p in itertools.product("ACGT", repeat=start):
-                sample = ''.join(p)
-                finds = [m.start() for m in re.finditer(sample, dna)]
-		if len(finds) > 1:
-			repeats.append(DnaFind(sample, finds))
-	return repeats
+class DnaSequenceRepeats:
+	def __init__(self, dna_sequence):
+		self.dna_sequence = dna_sequence
+	def find_repeats(self, repeat_size):
+		initial_repeats = self._find_initial_repeats()
+		return self._find_subsequent_repeats(repeat_size, initial_repeats)
 
-dna = "TACGTAGCAGACGTAGCA"
-
-initial = initial_repeats(dna)
-
-target = 12
-def find_repeats(dna, target, repeats):
-	all_candidates = []
-	for repeat in repeats:
-		candidates = []
-		for p in itertools.product("ACGT", repeat=1):
-			candidate = repeat.repeat + ''.join(p)
-			candidate_length = len(candidate)
-			matched = []
-			for start_position in repeat.start_indeces:
-				if dna[start_position:start_position + candidate_length] == candidate:
-					matched.append(start_position)
-			if len(matched) > 1:
-				candidates.append(DnaFind(candidate, matched))
-		if len(repeat.repeat) + 1 < target:
-			all_candidates.extend(find_repeats(dna, target, candidates))
-		else:
-			all_candidates.extend(candidates)
-	return all_candidates
+	def _find_initial_repeats(self):
+		start = 4
+		initial_repeats = []
+        	for sample_repeat_tuple in itertools.product("ACGT", repeat=start):
+                	sample_repeat = ''.join(sample_repeat_tuple)
+                	finds = [match.start() for match in re.finditer(sample_repeat, dna_sequence)]
+			if len(finds) > 1:
+				initial_repeats.append(DnaFind(sample_repeat, finds))
+		return initial_repeats
+	
+	def _find_subsequent_repeats(self, target, repeats):
+		all_candidates = []
+		for repeat in repeats:
+			candidates = []
+			for p in itertools.product("ACGT", repeat=1):
+				candidate = repeat.repeat + ''.join(p)
+				candidate_length = len(candidate)
+				matched = []
+				for start_position in repeat.start_indeces:
+					if self.dna_sequence[start_position:start_position + candidate_length] == candidate:
+						matched.append(start_position)
+				if len(matched) > 1:
+					candidates.append(DnaFind(candidate, matched))
+			if len(repeat.repeat) + 1 < target:
+				all_candidates.extend(self._find_subsequent_repeats(target, candidates))
+			else:
+				all_candidates.extend(candidates)
+		return all_candidates
 
 def finds(x): return len(x.start_indeces)
 
@@ -76,9 +79,9 @@ def has_start_indeces_at(repeats, repeat, start_indeces):
 	assert find_by_repeat(repeats, repeat, unique = True).start_indeces == start_indeces
 
 with open("all_dna.txt") as f:
-	dna = f.read()
-	initial = initial_repeats(dna)
-	repeats = find_repeats(dna, 12, initial)
+	dna_sequence = f.read()
+	repeats = DnaSequenceRepeats(dna_sequence).find_repeats(12)
+
 	contains_one(repeats, "AAAACGGCACCT") # Occurs twice in the dna.
 	contains_zero(repeats, "AAAACGGCTCGG") # Occurs once in the dna, so not a repeat.
 	contains_zero(repeats, "AAAACGGCTTAC") # Does not occur in the dna.
@@ -96,9 +99,3 @@ with open("all_dna.txt") as f:
 	assert max_occurrences == 3
 	print "All assertions passed."
 
-#	
-#	for p in itertools.product("ACGT", repeat=start):
-##		sample = ''.join(p)
-#		print "Sample:", sample
-#		found_times = len([i for i, _ in enumerate(text) if text.startswith(''.join(p), i)]))
-#	print "Found times:", found_times
