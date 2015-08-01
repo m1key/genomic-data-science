@@ -1,25 +1,25 @@
 import re
 
-class DnaFind:
+class DnaRepeat:
 	def __init__(self, repeat, start_indeces):
 		self.repeat = repeat
 		self.start_indeces = start_indeces
 	def __eq__(self, other):
 		return self.repeat == other.repeat and self.start_indeces.sort() == other.start_indeces.sort()
 	def __repr__(self):
-		return "DnaFind('%s', %s)" % (self.repeat, self.start_indeces)
+		return "DnaRepeat('%s', %s)" % (self.repeat, self.start_indeces)
 	__str__ = __repr__
 	def __hash__(self):
 		return hash(self.repeat)
 
-assert DnaFind("abc", [10]) == DnaFind("abc", [10])
-assert DnaFind("abc", [10]) != DnaFind("abc", [11])
-assert DnaFind("abc", [10]) != DnaFind("abd", [10])
-assert DnaFind("abc", [10, 15]) == DnaFind("abc", [10, 15])
-assert DnaFind("abc", [10, 15]) != DnaFind("abc", [10, 16])
-a_find = DnaFind("acgtgact", [10, 14, 19])
+assert DnaRepeat("abc", [10]) == DnaRepeat("abc", [10])
+assert DnaRepeat("abc", [10]) != DnaRepeat("abc", [11])
+assert DnaRepeat("abc", [10]) != DnaRepeat("abd", [10])
+assert DnaRepeat("abc", [10, 15]) == DnaRepeat("abc", [10, 15])
+assert DnaRepeat("abc", [10, 15]) != DnaRepeat("abc", [10, 16])
+a_find = DnaRepeat("acgtgact", [10, 14, 19])
 assert eval(str(a_find)) == a_find
-assert DnaFind("cagt", [20, 30]) == DnaFind("cagt", [30, 20])
+assert DnaRepeat("cagt", [20, 30]) == DnaRepeat("cagt", [30, 20])
 
 class DnaSequenceRepeats:
 	NUCLEOBASES = ['A', 'C', 'G', 'T']
@@ -38,7 +38,7 @@ class DnaSequenceRepeats:
                 	start_indeces = [match.start() for match in re.finditer(nucleobase, self.dna_sequence)]
 			# If this nucleobase has more than one occurrence, it is itself a repeat of length 1:
 			if len(start_indeces) > 1:
-				initial_repeats.append(DnaFind(nucleobase, start_indeces))
+				initial_repeats.append(DnaRepeat(nucleobase, start_indeces))
 		return initial_repeats
 	
 	def _find_subsequent_repeats(self, target, repeats):
@@ -55,7 +55,7 @@ class DnaSequenceRepeats:
 					if self.dna_sequence[start_position:start_position + candidate_length] == candidate:
 						matched.append(start_position)
 				if len(matched) > 1:
-					candidates.append(DnaFind(candidate, matched))
+					candidates.append(DnaRepeat(candidate, matched))
 			all_candidates.extend(self._find_subsequent_repeats(target, candidates))
 		return all_candidates
 
