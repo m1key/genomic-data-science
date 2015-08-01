@@ -28,8 +28,6 @@ class DnaSequenceRepeats:
 	
 	def find_repeats(self, repeat_size):
 		initial_repeats = self._find_initial_repeats()
-		if repeat_size == 1:
-			return initial_repeats
 		return self._find_subsequent_repeats(repeat_size, initial_repeats)
 
 	def _find_initial_repeats(self):
@@ -46,6 +44,8 @@ class DnaSequenceRepeats:
 	
 	def _find_subsequent_repeats(self, target, repeats):
 		all_candidates = []
+		if not repeats or len(repeats[0].repeat) == target:
+			return repeats
 		for repeat in repeats:
 			candidates = []
 			for p in itertools.product("ACGT", repeat=1):
@@ -57,10 +57,7 @@ class DnaSequenceRepeats:
 						matched.append(start_position)
 				if len(matched) > 1:
 					candidates.append(DnaFind(candidate, matched))
-			if len(repeat.repeat) + 1 < target:
-				all_candidates.extend(self._find_subsequent_repeats(target, candidates))
-			else:
-				all_candidates.extend(candidates)
+			all_candidates.extend(self._find_subsequent_repeats(target, candidates))
 		return all_candidates
 
 def finds(x): return len(x.start_indeces)
@@ -80,6 +77,8 @@ def contains_zero(repeats, repeat):
 	contains(repeats, repeat, 0)
 def has_start_indeces(repeats, repeat, start_position_count):
 	assert len(find_by_repeat(repeats, repeat, unique = True).start_indeces) == start_position_count
+def has_no_start_indeces(repeats, repeat):
+	assert len(find_by_repeat(repeats, repeat)) == 0
 def has_repeats_with_x_start_indeces(repeats, start_indeces_count, count):
 	assert len([find for find in repeats if len(find.start_indeces) == start_indeces_count]) == count
 def has_start_indeces_at(repeats, repeat, start_indeces):
@@ -116,6 +115,11 @@ with open("all_dna.txt") as f:
 	contains_one(repeats_1, "C")
 	contains_one(repeats_1, "G")
 	contains_one(repeats_1, "T")
+	has_start_indeces(repeats_1, "A", 8399)
+	has_no_start_indeces(repeats_1, "B")
+	has_start_indeces(repeats_1, "C", 16294)
+	has_start_indeces(repeats_1, "G", 16569)
+	has_start_indeces(repeats_1, "T", 8600)
 
 	print "All assertions passed."
 
