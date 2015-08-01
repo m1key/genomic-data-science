@@ -1,16 +1,16 @@
 import re
 
 class DnaRepeat:
-	def __init__(self, repeat, start_indeces):
-		self.repeat = repeat
+	def __init__(self, repeat_string, start_indeces):
+		self.repeat_string = repeat_string
 		self.start_indeces = start_indeces
 	def __eq__(self, other):
-		return self.repeat == other.repeat and self.start_indeces.sort() == other.start_indeces.sort()
+		return self.repeat_string == other.repeat_string and self.start_indeces.sort() == other.start_indeces.sort()
 	def __repr__(self):
-		return "DnaRepeat('%s', %s)" % (self.repeat, self.start_indeces)
+		return "DnaRepeat('%s', %s)" % (self.repeat_string, self.start_indeces)
 	__str__ = __repr__
 	def __hash__(self):
-		return hash(self.repeat)
+		return hash(self.repeat_string)
 
 assert DnaRepeat("abc", [10]) == DnaRepeat("abc", [10])
 assert DnaRepeat("abc", [10]) != DnaRepeat("abc", [11])
@@ -27,11 +27,12 @@ class DnaSequenceRepeats:
 	def __init__(self, dna_sequence):
 		self.dna_sequence = dna_sequence
 	
-	def find_repeats(self, repeat_size):
+	def find_repeats(self, repeat_length):
 		nucleobase_repeats = self._find_nucleobase_repeats()
-		return self._find_complex_repeats(repeat_size, nucleobase_repeats)
+		return self._find_complex_repeats(repeat_length, nucleobase_repeats)
 
 	def _find_nucleobase_repeats(self):
+		"""Finds repeats for single (one-character) nucleobases."""
 		nucleobase_repeats = []
         	for nucleobase in self.NUCLEOBASES:
 			# Find occurrences of nucleobases:
@@ -41,30 +42,42 @@ class DnaSequenceRepeats:
 				nucleobase_repeats.append(DnaRepeat(nucleobase, start_indeces))
 		return nucleobase_repeats
 	
-	def _find_complex_repeats(self, target, repeats):
-		all_candidates = []
-		if not repeats or len(repeats[0].repeat) == target:
-			return repeats
-		for repeat in repeats:
-			candidates = []
+	def _find_complex_repeats(self, repeat_length, repeat_candidates):
+		"""Finds repeats for complex (multiple-character) sequences.
+		
+		Args:
+			repeat_length (int): Final repeat length to find.
+			repeat_candidates (List[DnaRepeat]): potential repeat candidates of
+				length <= repeat_length.
+		"""
+		# If nothing found or we have already reached target length, return:
+		if not repeat_candidates or len(repeat_candidates[0].repeat_string) == repeat_length:
+			return repeat_candidates
+		
+		# This array will hold repeat candidates found in this iteration, so 1 character longer than the given ones.
+		all_longer_repeat_candidates = []
+		for repeat_candidate in repeat_candidates:
+			# This array will hold repeat candidates based on the current repeat candidate.
+			longer_repeat_candidates_for_this_repeat_candidate = []
 			for nucleobase in self.NUCLEOBASES:
-				candidate = repeat.repeat + nucleobase
-				candidate_length = len(candidate)
-				matched = []
-				for start_position in repeat.start_indeces:
-					if self.dna_sequence[start_position:start_position + candidate_length] == candidate:
-						matched.append(start_position)
-				if len(matched) > 1:
-					candidates.append(DnaRepeat(candidate, matched))
-			all_candidates.extend(self._find_complex_repeats(target, candidates))
-		return all_candidates
+				longer_repeat_candidate_string = repeat_candidate.repeat_string + nucleobase
+				start_indeces = []
+				for start_position in repeat_candidate.start_indeces:
+					if self.dna_sequence[start_position:start_position + len(longer_repeat_candidate_string)] == longer_repeat_candidate_string:
+						start_indeces.append(start_position)
+				# If this longer repeat candidate repeats more than once:
+				if len(start_indeces) > 1:
+					longer_repeat_candidates_for_this_repeat_candidate.append(DnaRepeat(longer_repeat_candidate_string, start_indeces))
+			# Now use the longer candidates to find even longer candidates.
+			all_longer_repeat_candidates.extend(self._find_complex_repeats(repeat_length, longer_repeat_candidates_for_this_repeat_candidate))
 
-def finds(x): return len(x.start_indeces)
+		return all_longer_repeat_candidates
 
-def find_by_repeat(repeats, repeat, unique = False):
-	all_finds = [find for find in repeats if find.repeat == repeat]
+
+def find_by_repeat(repeats, repeat_string, unique = False):
+	all_finds = [find for find in repeats if find.repeat_string == repeat_string]
 	if unique:
-		contains_one(repeats, repeat)
+		contains_one(repeats, repeat_string)
 		return all_finds[0]
 	else:
 		return all_finds
@@ -82,6 +95,8 @@ def has_repeats_with_x_start_indeces(repeats, start_indeces_count, count):
 	assert len([find for find in repeats if len(find.start_indeces) == start_indeces_count]) == count
 def has_start_indeces_at(repeats, repeat, start_indeces):
 	assert find_by_repeat(repeats, repeat, unique = True).start_indeces == start_indeces
+
+def finds(x): return len(x.start_indeces)
 
 with open("all_dna.txt") as f:
 	dna_sequence_repeats = DnaSequenceRepeats(f.read())
