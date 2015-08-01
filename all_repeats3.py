@@ -1,25 +1,25 @@
 import itertools
 import re
 
-class Find:
+class DnaFind:
 	def __init__(self, sequence, start_positions):
 		self.sequence = sequence
 		self.start_positions = start_positions
 	def __eq__(self, other):
 		return self.sequence == other.sequence and self.start_positions == other.start_positions
 	def __repr__(self):
-		return "Find('%s', %s)" % (self.sequence, self.start_positions)
+		return "DnaFind('%s', %s)" % (self.sequence, self.start_positions)
 	__str__ = __repr__
 
 start = 4
 target = 12
 
-assert Find("abc", [10]) == Find("abc", [10])
-assert Find("abc", [10]) != Find("abc", [11])
-assert Find("abc", [10]) != Find("abd", [10])
-assert Find("abc", [10, 15]) == Find("abc", [10, 15])
-assert Find("abc", [10, 15]) != Find("abc", [10, 16])
-find = Find("acgtgact", [10, 14, 19])
+assert DnaFind("abc", [10]) == DnaFind("abc", [10])
+assert DnaFind("abc", [10]) != DnaFind("abc", [11])
+assert DnaFind("abc", [10]) != DnaFind("abd", [10])
+assert DnaFind("abc", [10, 15]) == DnaFind("abc", [10, 15])
+assert DnaFind("abc", [10, 15]) != DnaFind("abc", [10, 16])
+find = DnaFind("acgtgact", [10, 14, 19])
 assert eval(str(find)) == find
 
 def initial_repeats(dna):
@@ -29,7 +29,7 @@ def initial_repeats(dna):
                 sample = ''.join(p)
                 finds = [m.start() for m in re.finditer(sample, dna)]
 		if len(finds) > 1:
-			repeats.append(Find(sample, finds))
+			repeats.append(DnaFind(sample, finds))
 	return repeats
 
 dna = "TACGTAGCAGACGTAGCA"
@@ -48,7 +48,7 @@ def find_repeats(dna, target, repeats):
 				if dna[start_position:start_position + candidate_length] == candidate:
 					matched.append(start_position)
 			if len(matched) > 1:
-				candidates.append(Find(candidate, matched))
+				candidates.append(DnaFind(candidate, matched))
 		if len(repeat.sequence) + 1 < target:
 			all_candidates.extend(find_repeats(dna, target, candidates))
 		else:
