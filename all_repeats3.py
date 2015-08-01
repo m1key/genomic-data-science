@@ -11,7 +11,6 @@ class DnaFind:
 		return "DnaFind('%s', %s)" % (self.repeat, self.start_indeces)
 	__str__ = __repr__
 
-start = 4
 target = 12
 
 assert DnaFind("abc", [10]) == DnaFind("abc", [10])
