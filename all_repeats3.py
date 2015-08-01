@@ -23,6 +23,8 @@ assert eval(str(a_find)) == a_find
 assert DnaFind("cagt", [20, 30]) == DnaFind("cagt", [30, 20])
 
 class DnaSequenceRepeats:
+	NUCLEOBASE = ['A', 'C', 'G', 'T']
+
 	def __init__(self, dna_sequence):
 		self.dna_sequence = dna_sequence
 	
@@ -31,15 +33,13 @@ class DnaSequenceRepeats:
 		return self._find_subsequent_repeats(repeat_size, initial_repeats)
 
 	def _find_initial_repeats(self):
-		initial_repeat_length = 1
 		initial_repeats = []
-        	for sample_repeat_tuple in itertools.product("ACGT", repeat = initial_repeat_length):
-                	sample_repeat = ''.join(sample_repeat_tuple)
-			# Find overlapping matches:
-                	finds = [match.start() for match in re.finditer('(?=%s)' % sample_repeat, self.dna_sequence)]
-			# If this sample repeat has more than one occurrence, it could possibly be an even longer match:
-			if len(finds) > 1:
-				initial_repeats.append(DnaFind(sample_repeat, finds))
+        	for nucleobase in self.NUCLEOBASE:
+			# Find occurrences of nucleobases:
+                	start_indeces = [match.start() for match in re.finditer(nucleobase, self.dna_sequence)]
+			# If this nucleobase has more than one occurrence, it is itself a repeat of length 1:
+			if len(start_indeces) > 1:
+				initial_repeats.append(DnaFind(nucleobase, start_indeces))
 		return initial_repeats
 	
 	def _find_subsequent_repeats(self, target, repeats):
